@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="40%" cy="35%" r="65%" fx="40%" fy="35%">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="50%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#4338ca"/>
+    </radialGradient>
+  </defs>
+  <!-- Full background -->
+  <rect width="512" height="512" fill="#09090f"/>
+  <!-- Rounded square logo area -->
+  <rect x="40.96" y="40.96" width="430.08" height="430.08" rx="94.6176" ry="94.6176" fill="url(#bg)"/>
+  <!-- Graduation cap emoji as text -->
+  <text x="256" y="286.1056" 
+        font-size="223.6416" 
+        text-anchor="middle" dominant-baseline="middle"
+        font-family="Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, serif">🎓</text>
+</svg>
