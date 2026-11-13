@@ -106,3 +106,40 @@ create policy "Students can delete own saved lessons"
 create index if not exists idx_saved_lessons_user_created
   on public.saved_lessons (user_id, created_at desc);
 
+-- 8. Unified Application Analytics Table (`analytics_events`)
+create table if not exists public.analytics_events (
+  id uuid default gen_random_uuid() primary key,
+  event_type text not null,
+  visitor_id text not null,
+  user_id uuid references auth.users(id) on delete set null,
+  user_name text,
+  page_path text default '/',
+  topic text,
+  interest text,
+  academic_subject text,
+  education_level text,
+  ai_model text,
+  device_type text default 'Desktop',
+  os_name text,
+  browser_name text,
+  created_at timestamptz default timezone('utc'::text, now()) not null
+);
+
+create index if not exists idx_analytics_events_created_at
+  on public.analytics_events (created_at desc);
+
+alter table public.analytics_events enable row level security;
+
+drop policy if exists "Anyone can insert analytics events" on public.analytics_events;
+create policy "Anyone can insert analytics events"
+  on public.analytics_events
+  for insert
+  with check (true);
+
+drop policy if exists "Anyone can view analytics events" on public.analytics_events;
+create policy "Anyone can view analytics events"
+  on public.analytics_events
+  for select
+  using (true);
+
+

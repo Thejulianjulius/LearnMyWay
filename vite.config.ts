@@ -9,12 +9,47 @@ import { buildMasterSystemPrompt, GROQ_MODEL_POOL } from "./src/lib/prompt";
 const devLessonCache = new Map<string, { content: string; model: string; expiresAt: number }>();
 const devInFlight = new Map<string, Promise<{ content: string; model: string }>>();
 const devModelCooldown = new Map<string, number>();
+const devAnalyticsEvents: Array<Record<string, unknown>> = [];
 let devRoundRobin = 0;
 
 function groqDevServerPlugin(env: Record<string, string>): Plugin {
   return {
     name: "groq-dev-server-plugin",
     configureServer(server) {
+      server.middlewares.use("/api/analytics", async (req, res) => {
+        res.setHeader("Content-Type", "application/json");
+        if (req.method === "GET") {
+          res.statusCode = 200;
+          res.end(JSON.stringify({ events: devAnalyticsEvents.slice(0, 400), totalStored: devAnalyticsEvents.length }));
+          return;
+        }
+        if (req.method === "POST") {
+          const chunks: Buffer[] = [];
+          req.on("data", (c: Buffer) => chunks.push(c));
+          req.on("end", () => {
+            try {
+              const body = JSON.parse(Buffer.concat(chunks).toString());
+              if (body && body.event_type) {
+                devAnalyticsEvents.unshift({
+                  ...body,
+                  id: body.id || "evt_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7),
+                  created_at: body.created_at || new Date().toISOString(),
+                });
+                if (devAnalyticsEvents.length > 1000) devAnalyticsEvents.length = 1000;
+              }
+              res.statusCode = 200;
+              res.end(JSON.stringify({ ok: true }));
+            } catch {
+              res.statusCode = 400;
+              res.end(JSON.stringify({ error: "Invalid JSON" }));
+            }
+          });
+          return;
+        }
+        res.statusCode = 405;
+        res.end(JSON.stringify({ error: "Method not allowed" }));
+      });
+
       server.middlewares.use("/api/generate-lesson", async (req, res) => {
         if (req.method !== "POST") {
           res.statusCode = 405;

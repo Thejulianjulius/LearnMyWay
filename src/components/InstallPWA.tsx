@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { Download, Share, X, Monitor, Smartphone, CheckCircle2, Apple } from "lucide-react";
 import { usePWA } from "@/hooks/usePWA";
+import { trackEvent } from "@/lib/analytics";
 
 interface InstallPWAProps {
   compact?: boolean;
@@ -24,6 +25,7 @@ export function InstallPWA({ compact = false, variant = "navbar" }: InstallPWAPr
   if (isInstalled) return null;
 
   const handleInstallClick = async () => {
+    trackEvent("pwa_download", { topic: "App Download Click" });
     if (canInstall) {
       setInstalling(true);
       try {

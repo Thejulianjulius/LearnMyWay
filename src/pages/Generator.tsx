@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { generateLessonAI, askFollowUpQuestionAI } from "@/lib/ai";
 import { formatModelDisplayName } from "@/lib/prompt";
+import { trackEvent } from "@/lib/analytics";
 import { INTERESTS } from "@/lib/constants";
 import { InstallPWA } from "@/components/InstallPWA";
 import {
@@ -81,6 +82,15 @@ export default function Generator() {
       if (response.model) {
         setActiveModel(formatModelDisplayName(response.model));
       }
+      trackEvent("lesson_generated", {
+        user_id: user?.id || null,
+        user_name: profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || null,
+        topic: topic.trim(),
+        interest: interestLabel,
+        academic_subject: academicSubject.trim() || undefined,
+        education_level: profile?.education_level || "High School",
+        ai_model: response.model,
+      });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong generating the lesson.");
     } finally {
@@ -128,6 +138,13 @@ export default function Generator() {
         ...newMessages,
         { role: "assistant", content: response.content },
       ]);
+      trackEvent("followup_asked", {
+        user_id: user?.id || null,
+        user_name: profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || null,
+        topic: topic.trim(),
+        interest: interestLabel,
+        ai_model: response.model,
+      });
     } catch (err: unknown) {
       setFollowUpMessages([
         ...newMessages,
@@ -157,6 +174,12 @@ export default function Generator() {
         console.warn("Failed to save lesson:", saveError.message);
       } else {
         setIsSaved(true);
+        trackEvent("lesson_saved", {
+          user_id: user.id,
+          user_name: profile?.full_name || user.user_metadata?.full_name || user.email?.split("@")[0] || null,
+          topic: topic.trim(),
+          interest: interestLabel,
+        });
       }
     } catch (err) {
       console.error("Error saving lesson:", err);

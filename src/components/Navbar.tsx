@@ -1,15 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, LayoutDashboard, Sparkles, LogIn, UserPlus, Menu, X, User } from "lucide-react";
+import { LogOut, LayoutDashboard, Sparkles, LogIn, UserPlus, Menu, X, User, BarChart3 } from "lucide-react";
 import { InstallPWA } from "@/components/InstallPWA";
+import { isAdminEmail, isAdminPinUnlocked, lockAdminPin } from "@/lib/analytics";
 
 export function Navbar() {
   const [location, setLocation] = useLocation();
   const { user, profile, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pinUnlocked, setPinUnlocked] = useState(isAdminPinUnlocked);
+
+  useEffect(() => {
+    const syncAdmin = () => setPinUnlocked(isAdminPinUnlocked());
+    window.addEventListener("learnmyway:admin-change", syncAdmin);
+    return () => window.removeEventListener("learnmyway:admin-change", syncAdmin);
+  }, []);
+
+  const isAdmin = isAdminEmail(user?.email) || pinUnlocked;
 
   const handleSignOut = async () => {
+    lockAdminPin();
     await signOut();
     setLocation("/");
     setMobileMenuOpen(false);
@@ -41,6 +52,18 @@ export function Navbar() {
             <Sparkles className="w-4 h-4" />
             Generator
           </Link>
+
+          {isAdmin && (
+            <Link
+              href="/analytics"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                location === "/analytics" ? "text-violet-300 bg-white/10" : "text-slate-300 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <BarChart3 className="w-4 h-4" />
+              Analytics
+            </Link>
+          )}
 
           {user ? (
             <>
@@ -134,6 +157,19 @@ export function Navbar() {
             <Sparkles className="w-4 h-4" />
             Lesson Generator
           </Link>
+
+          {isAdmin && (
+            <Link
+              href="/analytics"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium ${
+                location === "/analytics" ? "text-violet-300 bg-white/10" : "text-slate-300 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <BarChart3 className="w-4 h-4" />
+              Analytics
+            </Link>
+          )}
 
           {user ? (
             <>
