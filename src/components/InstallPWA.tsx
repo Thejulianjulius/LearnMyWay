@@ -194,7 +194,7 @@ export function InstallPWA({ compact = false, variant = "navbar" }: InstallPWAPr
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-violet-300">
                     <Monitor className="w-4 h-4" />
-                    <span>Or Install via Browser (Chrome / Edge / Brave)</span>
+                    <span>Install via Browser (Desktop or Mobile)</span>
                   </div>
                   <ol className="space-y-2.5 text-xs text-slate-300 bg-white/5 border border-white/10 rounded-xl p-3.5">
                     <li className="flex items-start gap-2.5">
@@ -202,7 +202,11 @@ export function InstallPWA({ compact = false, variant = "navbar" }: InstallPWAPr
                         1
                       </span>
                       <span>
-                        Open <span className="font-mono text-violet-300">http://localhost:3000</span> in Google Chrome, Edge, or Brave.
+                        Click the{" "}
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white/10 rounded text-white font-medium">
+                          <Download className="w-3 h-3" /> Install
+                        </span>{" "}
+                        icon on the right side of your browser&apos;s address bar, or open the browser menu <span className="font-semibold text-white">(⋮)</span>.
                       </span>
                     </li>
                     <li className="flex items-start gap-2.5">
@@ -210,11 +214,8 @@ export function InstallPWA({ compact = false, variant = "navbar" }: InstallPWAPr
                         2
                       </span>
                       <span>
-                        Click <span className="font-semibold text-white">Download App</span> or the{" "}
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white/10 rounded text-white font-medium">
-                          <Download className="w-3 h-3" /> Install
-                        </span>{" "}
-                        icon in the right side of the address bar.
+                        Select <span className="font-semibold text-white">Install LearnMyWay</span> (or{" "}
+                        <span className="font-semibold text-white">Add to Home screen</span> on mobile) and confirm to add the app to your device.
                       </span>
                     </li>
                   </ol>
