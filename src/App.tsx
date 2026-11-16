@@ -2,7 +2,9 @@ import { useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { UpdatePrompt } from "@/components/UpdatePrompt";
+import { WhatsAppChannelModal } from "@/components/WhatsAppChannelModal";
 import { trackEvent } from "@/lib/analytics";
 import Generator from "@/pages/Generator";
 import Login from "@/pages/Login";
@@ -37,7 +39,7 @@ function App() {
       <PageViewTracker />
       <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-900 text-white flex flex-col font-sans selection:bg-violet-500/30 selection:text-white">
         <Navbar />
-        <main className="flex-1">
+        <main className="flex-1 pb-20 md:pb-0">
           <Switch>
             <Route path="/" component={Generator} />
             <Route path="/login" component={Login} />
@@ -49,6 +51,8 @@ function App() {
             <Route component={NotFound} />
           </Switch>
         </main>
+        <MobileBottomNav />
+        <WhatsAppChannelModal />
         <Toaster />
         <UpdatePrompt />
       </div>
