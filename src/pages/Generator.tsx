@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { saveStudentLesson } from "@/lib/supabase";
 import { generateLessonAI, askFollowUpQuestionAI } from "@/lib/ai";
 import { formatModelDisplayName } from "@/lib/prompt";
 import { trackEvent } from "@/lib/analytics";
@@ -235,30 +235,26 @@ export default function Generator() {
   }
 
   async function handleSaveLesson() {
-    if (!user || !lesson || !selectedInterest || !topic.trim()) return;
+    if (!lesson || !selectedInterest || !topic.trim()) return;
     setSavingLesson(true);
     try {
       const interestLabel =
         INTERESTS.find((i) => i.id === selectedInterest)?.label ?? selectedInterest;
-      const { error: saveError } = await supabase.from("saved_lessons").insert({
-        user_id: user.id,
+      await saveStudentLesson({
+        user,
         interest: interestLabel,
         topic: topic.trim(),
-        lesson: lesson,
+        lesson,
       });
 
-      if (saveError) {
-        console.warn("Failed to save lesson:", saveError.message);
-      } else {
-        setIsSaved(true);
-        trackEvent("lesson_saved", {
-          user_id: user.id,
-          user_name:
-            profile?.full_name || user.user_metadata?.full_name || user.email?.split("@")[0] || null,
-          topic: topic.trim(),
-          interest: interestLabel,
-        });
-      }
+      setIsSaved(true);
+      trackEvent("lesson_saved", {
+        user_id: user?.id || null,
+        user_name:
+          profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || null,
+        topic: topic.trim(),
+        interest: interestLabel,
+      });
     } catch (err) {
       console.error("Error saving lesson:", err);
     } finally {
@@ -533,29 +529,27 @@ export default function Generator() {
                     )}
                   </button>
 
-                  {user && (
-                    <button
-                      type="button"
-                      onClick={handleSaveLesson}
-                      disabled={savingLesson || isSaved}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                        isSaved
-                          ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 cursor-default"
-                          : "bg-violet-500/20 hover:bg-violet-500/30 text-violet-200 border border-violet-500/30"
-                      }`}
-                    >
-                      {isSaved ? (
-                        <>
-                          <Check className="w-3.5 h-3.5" /> Saved
-                        </>
-                      ) : (
-                        <>
-                          <Bookmark className="w-3.5 h-3.5" />
-                          {savingLesson ? "Saving..." : "Save"}
-                        </>
-                      )}
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={handleSaveLesson}
+                    disabled={savingLesson || isSaved}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      isSaved
+                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 cursor-default"
+                        : "bg-violet-500/20 hover:bg-violet-500/30 text-violet-200 border border-violet-500/30"
+                    }`}
+                  >
+                    {isSaved ? (
+                      <>
+                        <Check className="w-3.5 h-3.5" /> Saved
+                      </>
+                    ) : (
+                      <>
+                        <Bookmark className="w-3.5 h-3.5" />
+                        {savingLesson ? "Saving..." : "Save"}
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
 

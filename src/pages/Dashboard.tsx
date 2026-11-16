@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase, type SavedLesson } from "@/lib/supabase";
+import { getStudentSavedLessons, deleteStudentSavedLesson, type SavedLesson } from "@/lib/supabase";
 import { INTERESTS as AVAILABLE_INTERESTS, EDUCATION_LEVELS } from "@/lib/constants";
 import {
   Sparkles,
@@ -38,17 +38,8 @@ export default function Dashboard() {
     if (!user) return;
     setLoadingLessons(true);
     try {
-      const { data, error } = await supabase
-        .from("saved_lessons")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.warn("Could not load saved lessons:", error.message);
-      } else if (data) {
-        setSavedLessons(data as SavedLesson[]);
-      }
+      const lessons = await getStudentSavedLessons(user);
+      setSavedLessons(lessons);
     } catch (err) {
       console.error("Error loading saved lessons:", err);
     } finally {
@@ -120,14 +111,11 @@ export default function Dashboard() {
 
   const handleDeleteLesson = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    try {
-      const { error } = await supabase.from("saved_lessons").delete().eq("id", id);
-      if (!error) {
-        setSavedLessons((prev) => prev.filter((item) => item.id !== id));
-        if (selectedLesson?.id === id) setSelectedLesson(null);
-      }
-    } catch (err) {
-      console.error("Error deleting saved lesson:", err);
+    const target = savedLessons.find((item) => item.id === id);
+    setSavedLessons((prev) => prev.filter((item) => item.id !== id));
+    if (selectedLesson?.id === id) setSelectedLesson(null);
+    if (target) {
+      await deleteStudentSavedLesson(user, target);
     }
   };
 
